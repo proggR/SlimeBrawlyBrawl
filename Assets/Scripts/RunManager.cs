@@ -114,7 +114,7 @@ public class RunManager : MonoBehaviour
         StartCoroutine("MonolithEye");
       }
 
-      primaryLight.transform.position = new Vector3(0f, 200f + ((float)level*20f), 0f);
+      primaryLight.transform.position = new Vector3(0f, 100f + ((float)level*20f), 0f);
 
       levelUI.text = level.ToString();
       player.LevelUp();
