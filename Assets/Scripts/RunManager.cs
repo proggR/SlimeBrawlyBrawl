@@ -2,16 +2,21 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 public class RunManager : MonoBehaviour
 {
 
+    public Light primaryLight;
     public AudioSource musicSource;
     public AudioSource actionSource;
     public AudioSource combatSource;
     public AudioClip[] musicClips;
     public GameObject opponentPrefab;
     public GameObject playerPrefab;
+    public GameObject monolithEye;
+    public GameObject monolithEyeLight;
     public Vector3 playerPositon = new Vector3(-130, 60, 0);
     public Vector3 opponentPositon = new Vector3(130, 60, 0);
 
@@ -29,6 +34,10 @@ public class RunManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+      monolithEye = GameObject.Find("Monolith/Eye");
+      monolithEyeLight = GameObject.Find("Monolith/Light");
+      monolithEye.SetActive(false);
+      monolithEyeLight.SetActive(false);
       musicSource.loop = true;
       musicClips = Resources.LoadAll<AudioClip>("Music");
       playerGO = Instantiate(playerPrefab, playerPositon, Quaternion.Euler(new Vector3(90,90,0)));
@@ -37,7 +46,9 @@ public class RunManager : MonoBehaviour
       player = playerGO.GetComponent<Slime>();
 
       outcomeUI.transform.parent.GetComponent<RectTransform>().localScale = new Vector3(0, 0);
-      NewRun();
+      newRunPanel.SetActive(true);
+      Button start = newRunPanel.GetComponentInChildren<Button>();
+      GameObject.Find("EventSystem").GetComponent<EventSystem>().SetSelectedGameObject(start.gameObject);
     }
 
     // Update is called once per frame
@@ -82,9 +93,29 @@ public class RunManager : MonoBehaviour
       StartCoroutine("SpawnLevel");
     }
 
+    IEnumerator MonolithEye(){
+      yield return new WaitForSeconds(3.25f);
+      monolithEye.SetActive(true);
+      monolithEyeLight.SetActive(true);
+      yield return new WaitForSeconds(1.5f);
+      monolithEye.transform.localScale = new Vector3(0.5f,0.1f,0.1f);
+      yield return new WaitForSeconds(3f);
+      monolithEye.transform.localScale = new Vector3(0.5f,0.2f,0.1f);
+      yield return new WaitForSeconds(2f);
+      monolithEye.SetActive(false);
+      monolithEyeLight.SetActive(false);
+    }
+
     IEnumerator SpawnLevel(){
       StartCoroutine("SwitchSongs");
       level++;
+
+      if(level%3==0){
+        StartCoroutine("MonolithEye");
+      }
+
+      primaryLight.transform.position = new Vector3(0f, 200f + ((float)level*20f), 0f);
+
       levelUI.text = level.ToString();
       player.LevelUp();
       yield return new WaitForSeconds(3f);
@@ -129,7 +160,7 @@ public class RunManager : MonoBehaviour
         if(winner.gameObject.layer == 10){
           StartCoroutine("SpawnLevel");
         }else{
-          newRunPanel.SetActive(true);
+          StartCoroutine("NewRunOption");
         }
       }else{
         StartCoroutine("Reset");
@@ -137,5 +168,10 @@ public class RunManager : MonoBehaviour
 
       outcomeUI.transform.parent.GetComponent<RectTransform>().localScale = new Vector3(0.2f, 0.1f);
       // Object.Destroy(loser.gameObject);
+    }
+
+    IEnumerator NewRunOption(){
+      yield return new WaitForSeconds(3f);
+      newRunPanel.SetActive(true);
     }
 }

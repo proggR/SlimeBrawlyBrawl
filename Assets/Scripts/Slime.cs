@@ -31,6 +31,8 @@ public class Slime : MonoBehaviour
     public Vector3 jumpingOrigin;
     protected float strikeRadiusMultiplier = 1f;
     protected float baseHP = 110f;
+    protected float kickbackHorizontal = 1.3f;
+    protected float kickbackVertical = 1.3f;
     protected float jumpingPower = 240f;
     protected float jumpingHeight = 50f;
     protected bool isFacingRight = true;
@@ -151,7 +153,7 @@ public class Slime : MonoBehaviour
       //   rb.velocity = new Vector2(horizontal * speed, rb.velocity.y);
       // }
       jumpingOrigin = rb.position;
-      rb.velocity = new Vector2(horizontal * speed, jumpingPower * yVal);
+      rb.velocity = new Vector2(horizontal * (kickbackHorizontal*speed), (kickbackVertical*jumpingPower) * yVal);
     }
 
     public void LevelUp(){

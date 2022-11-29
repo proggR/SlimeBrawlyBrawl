@@ -8,9 +8,11 @@ public class AISlime : Slime
 
     private Slime targetSlime;
     private bool aggrod;
+    private bool cooldown;
     private float aggroableMultiplier;
     private float aggroDelay;
     private float reactionDelay;
+    private float cooldownDelay;
     private float doubleJumpTiming;
     private float doubleJumpAdjust;
 
@@ -44,6 +46,7 @@ public class AISlime : Slime
       // reaction/delay specific params
       doubleJumpTiming = 2/3;
       aggroDelay = 48f * doubleJumpTiming;
+      cooldownDelay = 1.3f * doubleJumpTiming;
       reactionDelay = 24f * doubleJumpTiming;
 
 
@@ -84,24 +87,31 @@ public class AISlime : Slime
 
     IEnumerator AggroCooldown() {
       Collider aggro = isAggroable();
-      if(aggro != null && !aggrod && !running && !melee && !knocked){
+      if(aggro != null && !cooldown && !aggrod && !running && !melee && !knocked){
         aggrod = true;
+        cooldown = true;
         StartCoroutine("MeleeCooldown");
+        StartCoroutine("OffensiveCooldown");
       }
       yield return new WaitForSeconds(aggroDelay);
       aggrod = false;
       StartCoroutine("AggroCooldown");
     }
 
+    IEnumerator OffensiveCooldown() {
+      yield return new WaitForSeconds(cooldownDelay);
+      cooldown = false;
+    }
+
     IEnumerator StalkCooldown() {
       if(knocked || aggrod){
         Debug.Log("Stalking But Knocked");
       }else if(rb.position.y - targetSlime.transform.position.y >= 30f){
-        horizontal = 1f;
+        horizontal = cooldown ? -1f : 1f;
       }else if(targetSlime.transform.position.x < rb.position.x){
-        horizontal = -1f;
+        horizontal = cooldown ? 1f : -1f;
       }else if(targetSlime.transform.position.x > rb.position.x){
-        horizontal = 1f;
+        horizontal = cooldown ? -1f : 1f;
       }
       if(targetSlime.transform.position.y - rb.position.y >= 30f && isPlatformReachable()){
         jump(true);
